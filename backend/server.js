@@ -7,38 +7,42 @@ import authRoutes from "./routes/auth.routes.js";
 import examRoutes from "./routes/exam.routes.js";
 import responseRoutes from "./routes/response.routes.js";
 
-/* ===== ENV SETUP ===== */
+/* ================= ENV ================= */
 dotenv.config();
 
-/* ===== DATABASE CONNECTION ===== */
+/* ================= DB ================= */
 connectDB();
 
-/* ===== APP INIT ===== */
+/* ================= APP ================= */
 const app = express();
 
-/* ===== GLOBAL MIDDLEWARE ===== */
+/* ================= 🔥 CORS (FINAL GUARANTEED FIX) =================
+   WHY THIS WORKS:
+   - Allows ALL origins (for now)
+   - Explicit OPTIONS handling
+   - Render + Netlify safe
+================================================================== */
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174", // student frontend
-      "http://localhost:3000", // admin frontend
-    ],
-    credentials: true,
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+// 🔥 VERY IMPORTANT FOR PREFLIGHT
+app.options("*", cors());
+
+/* ================= BODY PARSERS ================= */
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-/* ===== API ROUTES ===== */
+/* ================= ROUTES ================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/exams", examRoutes);
 app.use("/api/responses", responseRoutes);
 
-/* ===== HEALTH CHECK ===== */
+/* ================= HEALTH CHECK ================= */
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
@@ -47,7 +51,7 @@ app.get("/", (req, res) => {
   });
 });
 
-/* ===== 404 HANDLER ===== */
+/* ================= 404 ================= */
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -55,16 +59,16 @@ app.use((req, res) => {
   });
 });
 
-/* ===== GLOBAL ERROR HANDLER ===== */
+/* ================= ERROR HANDLER ================= */
 app.use((err, req, res, next) => {
-  console.error("❌ ERROR:", err.stack);
+  console.error("❌ ERROR:", err.message);
   res.status(500).json({
     success: false,
-    message: "Internal server error",
+    message: err.message || "Internal server error",
   });
 });
 
-/* ===== SERVER START ===== */
+/* ================= START SERVER ================= */
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
