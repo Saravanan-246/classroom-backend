@@ -16,12 +16,11 @@ connectDB();
 /* ================= APP ================= */
 const app = express();
 
-/* ================= 🔥 CORS (FINAL GUARANTEED FIX) =================
-   WHY THIS WORKS:
-   - Allows ALL origins (for now)
-   - Explicit OPTIONS handling
-   - Render + Netlify safe
-================================================================== */
+/* ================= 🔥 CORS (EXPRESS v5 SAFE) =================
+   - Allows all origins (dev friendly)
+   - Handles OPTIONS preflight correctly
+   - Works on Render + Netlify + localhost
+=============================================================== */
 app.use(
   cors({
     origin: "*",
@@ -30,8 +29,8 @@ app.use(
   })
 );
 
-// 🔥 VERY IMPORTANT FOR PREFLIGHT
-app.options("*", cors());
+// ✅ REQUIRED for Express v5 (regex wildcard)
+app.options(/.*/, cors());
 
 /* ================= BODY PARSERS ================= */
 app.use(express.json({ limit: "10mb" }));
